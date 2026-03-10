@@ -414,6 +414,15 @@ function buildCommentEl(c) {
   }
 
   header.appendChild(createEl('span', 'text-gray-500 text-xs', fmtDate(c.date)));
+
+  // Delete button
+  var delBtn = createEl('button', 'text-gray-600 hover:text-red-400 text-xs mr-auto cursor-pointer', '\u00D7');
+  delBtn.title = '\u05DE\u05D7\u05E7 \u05D4\u05E2\u05E8\u05D4';
+  delBtn.style.fontSize = '1.1rem';
+  delBtn.style.lineHeight = '1';
+  delBtn.addEventListener('click', function() { deleteComment(c.date); });
+  header.appendChild(delBtn);
+
   bubble.appendChild(header);
   bubble.appendChild(createEl('p', 'text-gray-300', c.text));
   return bubble;
@@ -526,6 +535,30 @@ async function submitComment(e, trackId) {
     showToast('\u05E9\u05D2\u05D9\u05D0\u05D4 \u05D1\u05E9\u05DE\u05D9\u05E8\u05EA \u05D4\u05D4\u05E2\u05E8\u05D4', true);
     btn.textContent = '\u05E9\u05DC\u05D7';
     btn.disabled = false;
+  }
+}
+
+// Delete a comment by date
+async function deleteComment(date) {
+  // Optimistic removal
+  allComments = allComments.filter(function(c) { return c.date !== date; });
+  renderAllComments();
+  var countEl = document.getElementById('total-comments-count');
+  countEl.textContent = allComments.length + ' \u05D4\u05E2\u05E8\u05D5\u05EA';
+
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'delete', date: date })
+    });
+    showToast('\u05D4\u05D4\u05E2\u05E8\u05D4 \u05E0\u05DE\u05D7\u05E7\u05D4!');
+    loadComments();
+  } catch (err) {
+    console.error('Failed to delete comment:', err);
+    showToast('\u05E9\u05D2\u05D9\u05D0\u05D4 \u05D1\u05DE\u05D7\u05D9\u05E7\u05EA \u05D4\u05D4\u05E2\u05E8\u05D4', true);
+    loadComments();
   }
 }
 
