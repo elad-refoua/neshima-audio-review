@@ -507,12 +507,12 @@ async function submitComment(e, trackId) {
   btn.disabled = true;
 
   try {
-    // POST single comment to Apps Script backend
+    // POST single comment to Apps Script backend (no-cors: server gets data, we skip opaque response)
     await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(comment),
-      redirect: 'follow'
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(comment)
     });
 
     // Optimistic update + reload from server
