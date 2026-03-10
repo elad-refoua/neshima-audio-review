@@ -385,8 +385,7 @@
 </footer>
 
 <script>
-const BIN_ID = 'cafecec';
-const API_URL = 'https://extendsclass.com/api/json-storage/bin/' + BIN_ID;
+const API_URL = 'https://script.google.com/macros/s/AKfycby2S96m6JEkb3EVvm3_oM1_FgvLh7BOyVQH_lkatbqj-tSRokUA5SBKwSdD6sGulvPQRQ/exec';
 
 let allComments = [];
 
@@ -508,21 +507,20 @@ async function submitComment(e, trackId) {
   btn.disabled = true;
 
   try {
-    // Fetch latest to avoid overwriting
-    var getRes = await fetch(API_URL);
-    var data = await getRes.json();
-    data.comments = data.comments || [];
-    data.comments.push(comment);
-
+    // POST single comment to Apps Script backend
     await fetch(API_URL, {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(comment),
+      redirect: 'follow'
     });
 
-    allComments = data.comments;
+    // Optimistic update + reload from server
+    allComments.push(comment);
     renderAllComments();
     showToast('\u05D4\u05D4\u05E2\u05E8\u05D4 \u05E0\u05E9\u05DE\u05E8\u05D4!');
+    // Reload from server in background to sync
+    loadComments();
   } catch (err) {
     console.error('Failed to save comment:', err);
     showToast('\u05E9\u05D2\u05D9\u05D0\u05D4 \u05D1\u05E9\u05DE\u05D9\u05E8\u05EA \u05D4\u05D4\u05E2\u05E8\u05D4', true);
